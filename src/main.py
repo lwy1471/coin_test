@@ -41,6 +41,7 @@ def buy(cur):
     
     MY_COIN = (MY_PAPER_MONEY*0.9995) / cur['close']
     MY_PAPER_MONEY = 0
+    BUYING_MONEY = cur['close']
 
 def sell(cur):
     global MY_PAPER_MONEY
@@ -61,11 +62,13 @@ def init_status():
     global CURRENT_MAX
     global MY_PAPER_MONEY
     global BUYING_MONEY
+    global BUYING_COUNT
 
 
     CURRENT_STATUS = INIT_STATUS_CURRENT_STATUS
     CURRENT_MAX = INIT_STATUS_CURRENT_MAX
     BUYING_MONEY = 0
+    BUYING_COUNT = 0
 
 
 
@@ -159,13 +162,12 @@ if __name__ == "__main__":
             old_list = add_candle_type(old_list)
             mask = (old_list.cd_type == CANDLE_BLUE)
             old_count = old_list.tail(BUYING_COUNT+1)['cd_type'].str.count(CANDLE_BLUE).sum()
-            print(old_count)
 
             if ( sell_condition(cur_row, last_row, old_count) ):
                 
                 sell(cur_row)
 
-                print('selling: '+ str(current_price) + ', at: ' + cur_row['time'][:19])
+                print('selling: '+ str(current_price) + ', at: ' + cur_row['time'][:19] + ', profit: '+ str(current_price-BUYING_MONEY))
                 pprint('paper money: '+ str(MY_PAPER_MONEY)+', coin: '+str(MY_COIN))
                 sell_status()
             else :
@@ -181,7 +183,9 @@ if __name__ == "__main__":
         if( prev.minute != last_interval.minute ):
             if (CURRENT_STATUS == STATUS_BUYING):
                 BUYING_COUNT = BUYING_COUNT + 1
-            print('get new list')
+                print('get new list, staus: '+CURRENT_STATUS+', Buying count: '+str(BUYING_COUNT))
+            else :
+                print('get new list, staus: '+CURRENT_STATUS)
             old_list = get_old_list()
             last_row = pick_last_one(old_list)
             #print(last_row)
